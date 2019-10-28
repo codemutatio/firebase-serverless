@@ -14,7 +14,7 @@ app.use(cors());
 
 // POST / method
 app.post("/", (req, res) => {
-    const contact = {...req.body, key : uuidv5(req.body.birthday, '1b671a64-40d5-491e-99b0-da01ff1f3341')};
+    const contact = {...req.body};
 
     return admin.database().ref('/contacts').push(contact)
         .then(() => {
@@ -36,3 +36,11 @@ app.get("/", (req, res) => {
 })
 
 exports.contacts = functions.https.onRequest(app);
+
+exports.ContactCreate = functions.database
+  .ref("/contacts/{key}")
+  .onCreate((snapshot) => {
+    const APP_NAMESPACE = "1b671a64-40d5-491e-99b0-da01ff1f3341";
+    const newKey = uuidv5(Date.now().toString(), APP_NAMESPACE);
+    return snapshot.ref.update({ key : newKey });
+  });
